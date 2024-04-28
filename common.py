@@ -1,17 +1,16 @@
 import struct
+import random
 
 def create_message(user_choice):
     """Cria uma mensagem de requisição baseada na escolha do usuário."""
-    if user_choice == '1':
-        req_type = 0x00  # Data e hora
-    elif user_choice == '2':
-        req_type = 0x01  # Mensagem motivacional
-    elif user_choice == '3':
-        req_type = 0x02  # Quantidade de respostas
-    else:
+    type_mapping = {'1': 0x00, '2': 0x01, '3': 0x02}
+    req_type = type_mapping.get(user_choice)
+    if req_type is None:
         return None
 
-    identifier = 14161  # Exemplo de identificador, você pode implementar algo para gerar aleatoriamente
+    # Geração aleatória de identificador entre 1 e 65535
+    identifier = random.randint(1, 65535)
+    # Empacota a requisição como 0 (bits 0000) para uma requisição, tipo de requisição e identificador
     message = struct.pack('!BBH', 0x00, req_type, identifier)
     return message
 
@@ -21,14 +20,18 @@ def parse_response(data):
         return "Nenhuma resposta recebida."
     
     # Descompacta o cabeçalho da resposta
-    res_type, identifier, size = struct.unpack('!BBH', data[:4])
-    # Verifica o tipo de resposta
+    header = data[:4]
+    res_type, identifier, size = struct.unpack('!BBH', header)
+    
+    # A resposta real começa após o cabeçalho, portanto, verifique se os dados recebidos são suficientes
+    if len(data) != 4 + size:
+        return "Dados de resposta incompletos."
+    
+    # Interpreta os bytes da resposta baseado no tipo
     if res_type == 0x10:  # Data e hora
-        format_str = '!{}s'.format(size)
-        response = struct.unpack(format_str, data[4:4+size])[0].decode()
+        response = data[4:].decode('utf-8')
     elif res_type == 0x11:  # Mensagem motivacional
-        format_str = '!{}s'.format(size)
-        response = struct.unpack(format_str, data[4:4+size])[0].decode()
+        response = data[4:].decode('utf-8')
     elif res_type == 0x12:  # Quantidade de respostas
         response = struct.unpack('!I', data[4:4+size])[0]
     else:

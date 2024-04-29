@@ -34,6 +34,13 @@ def interpretar_resposta(resposta_bytes):
 
     if tipo == 0b1111 and tamanho_resposta == 0:
         return f"Requisição inválida ou problema no identificador {identificador}."
+    elif tipo == config.FORMATO_CONTADOR_RESPOSTAS:
+        # O tamanho da resposta deve ser exatamente 4 bytes para o contador de respostas
+        if tamanho_resposta != 4:
+            return "Formato da resposta do contador de respostas é incorreto."
+        # Desempacota os próximos 4 bytes como um inteiro sem sinal
+        contador_respostas, = struct.unpack('!I', resposta_bytes[4:8])
+        return contador_respostas
     else:
         return resposta.decode('utf-8', errors='ignore')  # Decodifica a resposta para string
 

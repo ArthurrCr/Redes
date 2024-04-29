@@ -20,7 +20,7 @@ def run_server():
     print("Servidor iniciado. Aguardando mensagens...")
     try:
         while True:
-            data, addr = server_socket.recvfrom(1024)
+            data, addr = server_socket.recvfrom(1024) # Recebe a mensagem do cliente
             contador_respostas += 1  # Incrementa o contador de respostas
             print(f"Mensagem recebida de {addr}")
 
@@ -30,10 +30,16 @@ def run_server():
             # Verifica o tipo de requisição e gera a resposta apropriada
             if tipo == config.FORMATO_DATA_HORA:
                 resposta = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S").encode()
+
             elif tipo == config.FORMATO_MENSAGEM_MOTIVACIONAL:
-                resposta = random.choice(mensagens_motivacionais).encode()
+                mensagem_selecionada = random.choice(mensagens_motivacionais)
+                print(f"Mensagem motivacional selecionada: {mensagem_selecionada}")  # Depuração
+                resposta = mensagem_selecionada.encode()
+
             elif tipo == config.FORMATO_CONTADOR_RESPOSTAS:
-                resposta = f"O servidor enviou {contador_respostas} respostas até agora.".encode()
+                # Empacota o número de respostas (que é um int) em 4 bytes
+                resposta = struct.pack('!I', contador_respostas)
+                
             elif tipo == config.FORMATO_REQUISICAO_INVALIDA:
                 resposta = b"Requisicao invalida."
 

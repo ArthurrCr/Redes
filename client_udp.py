@@ -1,20 +1,43 @@
 import socket
+import struct
 import config
+import random
 
-# Função para formatar a mensagem para o servidor
-def formatar_requisicao(opcao):
-    # Aqui você deve implementar a lógica para criar uma mensagem
-    # que esteja de acordo com o protocolo especificado pelo servidor.
-    # Este é um exemplo genérico:
-    if opcao == '1':
-        return 'GET TIME'
-    elif opcao == '2':
-        return 'GET MOTIVATION'
-    elif opcao == '3':
-        return 'GET COUNT'
-    # Adicione mais condições conforme necessário para outros tipos de mensagens.
+# Função para construir a mensagem de requisição
+def construir_requisicao(tipo):
+    req_res_tipo = (0 << 4) | tipo  # 0 para req, tipo em 4 bits inferiores
+    identificador = random.randint(1, 65535)
+    # Constrói a mensagem com o formato correto
+    mensagem_bytes = struct.pack('!BH', req_res_tipo, identificador)
+    return mensagem_bytes, identificador
+
+# Função para interpretar a resposta do servidor
+def interpretar_resposta(resposta_bytes):
+    # Verifica se os bytes recebidos estão de acordo com o cabeçalho esperado
+    if len(resposta_bytes) < 6:  # Cabeçalho de 4 bytes + tamanho da resposta de 1 byte + pelo menos 1 byte de resposta
+        return "Resposta do servidor incompleta."
+    
+    # Extrai os campos da mensagem de resposta (1 byte para req_res e tipo, 2 bytes para identificador)
+    req_res_tipo, identificador = struct.unpack('!BH', resposta_bytes[:3])
+    req_res = req_res_tipo >> 4  # Extrai os 4 bits superiores para req/res
+    tipo = req_res_tipo & 0x0F   # Extrai os 4 bits inferiores para o tipo
+    tamanho_resposta = resposta_bytes[3]  # O 4º byte é o tamanho da resposta
+
+    if req_res != 1:  # Verifica se a mensagem é uma resposta
+        return "Mensagem recebida não é uma resposta."
+
+    if len(resposta_bytes) < 4 + tamanho_resposta:
+        return f"Tamanho da resposta ({tamanho_resposta} bytes) não corresponde ao esperado ({len(resposta_bytes) - 4} bytes)."
+
+    # O resto da mensagem é a resposta
+    resposta = resposta_bytes[4:4+tamanho_resposta]
+
+    if tipo == 0b1111 and tamanho_resposta == 0:
+        return f"Requisição inválida ou problema no identificador {identificador}."
     else:
-        return 'UNKNOWN COMMAND'
+        return resposta.decode('utf-8', errors='ignore')  # Decodifica a resposta para string
+
+
 
 # Criar um socket UDP
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -22,28 +45,29 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 try:
     while True:
         print("\nMenu de Opções:")
-        print("1 - Data e hora atual")
-        print("2 - Mensagem motivacional")
-        print("3 - Quantidade de respostas do servidor")
-        print("4 - Sair")
-        opcao = input("Escolha uma opção: ")
+        print("0 - Data e hora atual")
+        print("1 - Mensagem motivacional")
+        print("2 - Quantidade de respostas do servidor")
+        print("3 - Sair")
+        opcao = int(input("Escolha uma opção: "))
 
-        # Formatar a requisição
-        mensagem_formatada = formatar_requisicao(opcao)
-        sock.sendto(mensagem_formatada.encode(), (config.SERVER_IP, config.SERVER_PORT))
-
-        if opcao == '4':
+        if opcao == 3:
             print("Saindo...")
             break
 
-        # Receber a resposta do servidor
-        data, _ = sock.recvfrom(4096)
-        resposta = data.decode()
+        # Construir a mensagem de requisição e enviar para o servidor
+        mensagem, identificador = construir_requisicao(opcao)
+        sock.sendto(mensagem, (config.SERVER_IP, config.SERVER_PORT))
 
-        # Aqui você deve implementar a lógica para converter a resposta do servidor
-        # para um formato legível, assumindo que ela pode não vir legível.
-        # O exemplo abaixo simplesmente assume que a resposta já é legível.
-        print("Resposta do servidor:", resposta)
+        # Receber a resposta do servidor
+        data, _ = sock.recvfrom(1024)  # Tamanho do buffer definido de acordo com a especificação
+        print(f"Tamanho dos dados recebidos: {len(data)}")
+        try:
+            resposta = interpretar_resposta(data)
+            print(f"Resposta do servidor para o identificador {identificador}: {resposta}")
+        except struct.error as e:
+            print(f"Erro ao interpretar resposta: {e}")
 
 finally:
     sock.close()
+    print('Socket fechado')

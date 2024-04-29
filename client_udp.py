@@ -18,7 +18,7 @@ def interpretar_resposta(resposta_bytes):
         return "Resposta do servidor incompleta."
     
     # Extrai os campos da mensagem de resposta (1 byte para req_res e tipo, 2 bytes para identificador)
-    req_res_tipo, identificador = struct.unpack('!BH', resposta_bytes[:3])
+    req_res_tipo, identificador = struct.unpack('!BH', resposta_bytes[:3]) # ! indica big-endian
     req_res = req_res_tipo >> 4  # Extrai os 4 bits superiores para req/res
     tipo = req_res_tipo & 0x0F   # Extrai os 4 bits inferiores para o tipo
     tamanho_resposta = resposta_bytes[3]  # O 4º byte é o tamanho da resposta
@@ -34,10 +34,12 @@ def interpretar_resposta(resposta_bytes):
 
     if tipo == 0b1111 and tamanho_resposta == 0:
         return f"Requisição inválida ou problema no identificador {identificador}."
+    
     elif tipo == config.FORMATO_CONTADOR_RESPOSTAS:
         # O tamanho da resposta deve ser exatamente 4 bytes para o contador de respostas
         if tamanho_resposta != 4:
             return "Formato da resposta do contador de respostas é incorreto."
+        
         # Desempacota os próximos 4 bytes como um inteiro sem sinal
         contador_respostas, = struct.unpack('!I', resposta_bytes[4:8])
         return contador_respostas

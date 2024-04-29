@@ -1,5 +1,5 @@
 # IP do servidor ao qual os clientes irão se conectar
-SERVER_IP = '15.228.191.109'
+SERVER_IP = '127.0.0.1'
 
 # Porta do servidor para as conexões dos clientes
 SERVER_PORT = 50000

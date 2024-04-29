@@ -15,40 +15,38 @@ contador_respostas = 0
 def run_server():
     global contador_respostas
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    server_socket.bind(('0.0.0.0', 50000))  # 0.0.0.0 para aceitar conexões de qualquer IP
+    server_socket.bind(('127.0.0.1', 50000))  # Use localhost para testes locais
 
     print("Servidor iniciado. Aguardando mensagens...")
     try:
         while True:
-            data, addr = server_socket.recvfrom(1024) # Recebe a mensagem do cliente
-            contador_respostas += 1  # Incrementa o contador de respostas
+            data, addr = server_socket.recvfrom(1024)
+            contador_respostas += 1
             print(f"Mensagem recebida de {addr}")
 
             req_res_tipo, identificador = struct.unpack('!BH', data[:3])
-            tipo = req_res_tipo & 0x0F  # Extrai os 4 bits inferiores para o tipo
+            tipo = req_res_tipo & 0x0F
 
-            # Verifica o tipo de requisição e gera a resposta apropriada
+            resposta = b"Tipo de requisicao desconhecido"  # Valor padrão para resposta
+
             if tipo == config.FORMATO_DATA_HORA:
-                resposta = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S").encode()
+                # Formato: Dia da semana abreviado, Mês abreviado, Dia, Hora:Minuto:Segundo, Ano
+                resposta = datetime.datetime.now().strftime("%a %b %d %H:%M:%S %Y\n").encode()
 
             elif tipo == config.FORMATO_MENSAGEM_MOTIVACIONAL:
                 mensagem_selecionada = random.choice(mensagens_motivacionais)
-                print(f"Mensagem motivacional selecionada: {mensagem_selecionada}")  # Depuração
                 resposta = mensagem_selecionada.encode()
 
             elif tipo == config.FORMATO_CONTADOR_RESPOSTAS:
-                # Empacota o número de respostas (que é um int) em 4 bytes
                 resposta = struct.pack('!I', contador_respostas)
-                
+
             elif tipo == config.FORMATO_REQUISICAO_INVALIDA:
                 resposta = b"Requisicao invalida."
 
-            # Empacota a resposta no formato especificado
             tamanho_resposta = len(resposta)
             header_resposta = struct.pack('!BHB', (1 << 4) | tipo, identificador, tamanho_resposta)
             mensagem_completa = header_resposta + resposta
 
-            # Envia a resposta para o cliente
             server_socket.sendto(mensagem_completa, addr)
     except KeyboardInterrupt:
         print("Servidor encerrado.")

@@ -5,10 +5,10 @@ SERVER_IP = '127.0.0.1'
 SERVER_PORT = 50000
 
 # IP do cliente (necessário para o cabeçalho IP em client_raw.py)
-SOURCE_IP = '192.168.1.100' 
+CLIENT_IP = '192.168.1.100' 
 
 # Porta de origem para uso no cliente RAW
-SOURCE_PORT = 12345
+CLIENT_PORT = 12345
 
 # Formatos de mensagem pré-definidos
 FORMATO_DATA_HORA = 0b0000  # 0000 para data e hora

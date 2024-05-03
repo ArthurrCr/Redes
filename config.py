@@ -1,14 +1,14 @@
 # IP do servidor ao qual os clientes irão se conectar
-SERVER_IP = '127.0.0.1'
+SERVER_IP = '15.228.191.109'
 
 # Porta do servidor para as conexões dos clientes
 SERVER_PORT = 50000
 
 # IP do cliente (necessário para o cabeçalho IP em client_raw.py)
-CLIENT_IP = '192.168.1.100' 
+CLIENT_IP = '192.168.1.105' 
 
 # Porta de origem para uso no cliente RAW
-CLIENT_PORT = 12345
+CLIENT_PORT = 59155
 
 # Formatos de mensagem pré-definidos
 FORMATO_DATA_HORA = 0b0000  # 0000 para data e hora

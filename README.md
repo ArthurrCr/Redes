@@ -30,7 +30,7 @@ FORMATO_DATA_HORA = 0b0000  # 0000 para data e hora
 FORMATO_MENSAGEM_MOTIVACIONAL = 0b0001  # 0001 para mensagem motivacional
 FORMATO_CONTADOR_RESPOSTAS = 0b0010  # 0010 para contador de respostas
 FORMATO_REQUISICAO_INVALIDA = 0b0011  # 0011 para requisição inválida
-
+```
 ## Como Usar
 
 1. **Servidor**: Execute o `server.py` para iniciar o servidor.

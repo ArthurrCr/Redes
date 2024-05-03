@@ -1,5 +1,3 @@
-Aqui está um esboço para o seu `README.md`:
-
 # Projeto Cliente/Servidor UDP
 
 Este projeto implementa dois tipos de clientes que enviam requisições para um servidor UDP que escuta na porta 50000.

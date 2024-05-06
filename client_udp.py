@@ -1,3 +1,6 @@
+# Arthur César Cardoso Clemente - 20190175757
+# Ruy de Morais e Silva - 2019017695
+# Deivison Rodrigues Jordão - 20200023728
 import socket
 import struct
 import config

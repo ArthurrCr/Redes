@@ -1,3 +1,7 @@
+# Arthur César Cardoso Clemente - 20190175757
+# Ruy de Morais e Silva - 2019017695
+# Deivison Rodrigues Jordão - 20200023728
+
 # IP do servidor ao qual os clientes irão se conectar
 SERVER_IP = '15.228.191.109'
 
